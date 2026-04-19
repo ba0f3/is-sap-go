@@ -1,11 +1,6 @@
 package sap
 
-import (
-	"regexp"
-	"strings"
-
-	"github.com/PuerkitoBio/goquery"
-)
+import "regexp"
 
 // Generic SPA heuristics (weak signals used when no framework is detected).
 var genericSignatures = []*Signature{
@@ -97,61 +92,4 @@ var genericSignatures = []*Signature{
 			),
 		},
 	},
-}
-
-// Generic heuristics integrated into scoring.
-// These are already handled by the genericSignatures above, but we can add
-// more sophisticated detection in the future (e.g., analyzing bundle structure).
-func detectGenericSPA(scan *Scan) bool {
-	// Count hashed bundles in script/link tags.
-	doc := scan.Doc()
-	if doc == nil {
-		return false
-	}
-
-	hashedBundleRe := regexp.MustCompile(`\.[a-f0-9]{8,}\.(js|mjs|css)$`)
-
-	hashedScripts := 0
-	doc.Find("script[src]").Each(func(_ int, s *goquery.Selection) {
-		if src, ok := s.Attr("src"); ok && hashedBundleRe.MatchString(src) {
-			hashedScripts++
-		}
-	})
-
-	hashedLinks := 0
-	doc.Find("link[href][rel~='stylesheet']").Each(func(_ int, s *goquery.Selection) {
-		if href, ok := s.Attr("href"); ok && hashedBundleRe.MatchString(href) {
-			hashedLinks++
-		}
-	})
-
-	// If >= 3 hashed modulepreload links, strong SPA signal.
-	modulepreloadCount := 0
-	doc.Find("link[rel~='modulepreload']").Each(func(_ int, s *goquery.Selection) {
-		modulepreloadCount++
-	})
-
-	if modulepreloadCount >= 3 {
-		return true
-	}
-
-	// If body has minimal text and a single app root div, likely SPA.
-	bodyText := strings.TrimSpace(doc.Find("body").Text())
-	if len(bodyText) < 1000 && countAppRoots(doc) == 1 {
-		return true
-	}
-
-	return false
-}
-
-// countAppRoots counts div elements with IDs in the known app root list.
-func countAppRoots(doc *goquery.Document) int {
-	appIds := []string{"app", "root", "main", "__nuxt", "__next", "___gatsby"}
-	count := 0
-	for _, id := range appIds {
-		if doc.Find("div#" + id).Length() > 0 {
-			count++
-		}
-	}
-	return count
 }
