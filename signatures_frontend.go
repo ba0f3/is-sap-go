@@ -2,7 +2,6 @@ package sap
 
 import (
 	"regexp"
-	"strings"
 )
 
 // Frontend framework signatures.
@@ -255,11 +254,7 @@ func extractReactVersion(scan *Scan) string {
 	return ""
 }
 
-func extractVueVersion(scan *Scan) string {
-	// Try to extract from Vue.version or __VUE__ global.
-	if strings.Contains(scan.BodyStr, "Vue.version") {
-		// Simple regex extraction could go here.
-	}
+func extractVueVersion(_ *Scan) string {
 	return ""
 }
 
