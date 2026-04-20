@@ -2,9 +2,7 @@ package sap
 
 import "regexp"
 
-// Generic SPA heuristics (weak signals used when no framework is detected).
 var genericSignatures = []*Signature{
-	// Generic root app div pattern
 	{
 		Framework: "SPA (generic)",
 		Category:  CategorySPAFramework,
@@ -20,8 +18,6 @@ var genericSignatures = []*Signature{
 			),
 		},
 	},
-
-	// JavaScript required message (noscript tag)
 	{
 		Framework: "SPA (noscript)",
 		Category:  CategorySPAFramework,
@@ -32,8 +28,6 @@ var genericSignatures = []*Signature{
 			),
 		},
 	},
-
-	// Hashed bundle filenames
 	{
 		Framework: "SPA (hashed-bundles)",
 		Category:  CategorySPAFramework,
@@ -44,8 +38,6 @@ var genericSignatures = []*Signature{
 			),
 		},
 	},
-
-	// modulepreload link tags
 	{
 		Framework: "SPA (modulepreload)",
 		Category:  CategorySPAFramework,
@@ -56,8 +48,6 @@ var genericSignatures = []*Signature{
 			),
 		},
 	},
-
-	// Service worker registration
 	{
 		Framework: "SPA (service-worker)",
 		Category:  CategorySPAFramework,
@@ -68,8 +58,6 @@ var genericSignatures = []*Signature{
 			),
 		},
 	},
-
-	// PWA manifest
 	{
 		Framework: "SPA (manifest)",
 		Category:  CategorySPAFramework,
@@ -80,8 +68,6 @@ var genericSignatures = []*Signature{
 			),
 		},
 	},
-
-	// Hash-based routing
 	{
 		Framework: "SPA (hash-routing)",
 		Category:  CategorySPAFramework,

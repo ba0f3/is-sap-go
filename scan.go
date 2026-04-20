@@ -62,7 +62,7 @@ func (s *Scan) JSBlobs() []JSBlob {
 		return nil
 	}
 	s.blobsOnce.Do(func() {
-		s.jsBlobs = ExtractJsDataFromHTML(s.BodyStr)
+		s.jsBlobs = ExtractJSDataFromHTML(s.BodyStr)
 	})
 	return s.jsBlobs
 }
