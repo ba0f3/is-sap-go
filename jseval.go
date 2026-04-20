@@ -13,8 +13,8 @@ type JSBlob struct {
 	Size int
 }
 
-// ExtractJsDataFromHTML uses goja to sandbox inline scripts and harvest window.__* globals.
-func ExtractJsDataFromHTML(html string) []JSBlob {
+// ExtractJSDataFromHTML uses goja to sandbox inline scripts and harvest window.__* globals.
+func ExtractJSDataFromHTML(html string) []JSBlob {
 	vm := goja.New()
 
 	// Set up minimal sandboxed globals: window, document, navigator, etc.

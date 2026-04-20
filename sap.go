@@ -3,10 +3,12 @@ package sap
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"time"
 )
 
-// Options configures detection behavior.
+// Options configures detection behavior for [Detect], [DetectFromResponse],
+// and [DetectFromHTML].
 type Options struct {
 	Timeout         time.Duration
 	UserAgent       string
@@ -16,10 +18,9 @@ type Options struct {
 	HTTPClient      *http.Client
 }
 
-// Option is a functional option for configuring Options.
+// Option is a functional option for configuring [Options].
 type Option func(*Options)
 
-// defaultOptions returns Options with sensible defaults.
 func defaultOptions() *Options {
 	return &Options{
 		Timeout:         10 * time.Second,
@@ -30,7 +31,6 @@ func defaultOptions() *Options {
 	}
 }
 
-// applyOptions merges Option funcs into the base.
 func applyOptions(opts *Options, fns ...Option) {
 	for _, f := range fns {
 		f(opts)
@@ -65,21 +65,22 @@ func WithFollowRedirects(follow bool) Option {
 	}
 }
 
-// WithEnableJSEval enables the optional goja JS sandbox.
+// WithEnableJSEval enables the optional goja JS sandbox for extracting
+// window.__* globals from inline scripts.
 func WithEnableJSEval(enable bool) Option {
 	return func(o *Options) {
 		o.EnableJSEval = enable
 	}
 }
 
-// WithHTTPClient sets a custom HTTP client.
+// WithHTTPClient sets a custom HTTP client for [Detect].
 func WithHTTPClient(c *http.Client) Option {
 	return func(o *Options) {
 		o.HTTPClient = c
 	}
 }
 
-// Detect fetches rawURL and detects the SPA framework.
+// Detect fetches rawURL and detects the SPA framework used by the page.
 func Detect(ctx context.Context, rawURL string, opts ...Option) (*Result, error) {
 	options := defaultOptions()
 	applyOptions(options, opts...)
@@ -88,22 +89,37 @@ func Detect(ctx context.Context, rawURL string, opts ...Option) (*Result, error)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	resp.Body.Close()
 
-	return DetectFromResponse(resp, body, opts...)
+	result, err := DetectFromHTML(string(body), resp.Header, opts...)
+	if err != nil {
+		return result, err
+	}
+	result.StatusCode = resp.StatusCode
+
+	if u, parseErr := parseURL(rawURL); parseErr == nil {
+		result.URL = u
+	}
+
+	return result, nil
 }
 
 // DetectFromResponse analyzes a pre-fetched HTTP response.
 func DetectFromResponse(resp *http.Response, body []byte, opts ...Option) (*Result, error) {
-	options := defaultOptions()
-	applyOptions(options, opts...)
+	result, err := DetectFromHTML(string(body), resp.Header, opts...)
+	if err != nil {
+		return result, err
+	}
+	result.StatusCode = resp.StatusCode
 
-	return DetectFromHTML(string(body), resp.Header, append(opts,
-		WithTimeout(0), // ignore timeout for already-fetched content
-	)...)
+	if u, parseErr := parseURL(resp.Request.URL.String()); parseErr == nil {
+		result.URL = u
+	}
+
+	return result, nil
 }
 
-// DetectFromHTML is the lowest-level primitive; analyzes raw HTML and headers.
+// DetectFromHTML analyzes raw HTML and headers to detect SPA frameworks.
 func DetectFromHTML(html string, headers http.Header, opts ...Option) (*Result, error) {
 	options := defaultOptions()
 	applyOptions(options, opts...)
@@ -112,10 +128,8 @@ func DetectFromHTML(html string, headers http.Header, opts ...Option) (*Result, 
 		headers = make(http.Header)
 	}
 
-	// Create a scan context.
 	scan := newScan("", headers, []byte(html), options)
 
-	// Run all signatures through the registry.
 	result := &Result{
 		IsSPA:      false,
 		Confidence: 0,
@@ -125,21 +139,23 @@ func DetectFromHTML(html string, headers http.Header, opts ...Option) (*Result, 
 		Extras:     make(map[string]string),
 	}
 
-	// Score all signatures.
 	scoreSignatures(scan, result)
 
-	// Filter redundant frameworks (e.g., suppress React if Next.js is high-confidence).
 	suppressRedundant(result)
 
-	// Sort by confidence descending.
 	sortFrameworks(result.Frameworks)
 	sortFrameworks(result.Hosting)
 
-	// Determine if it's a SPA.
 	result.IsSPA = determineSPA(result)
-
-	// Overall confidence = max of SPA frameworks + bump from generic heuristics.
 	result.Confidence = calculateConfidence(result)
 
 	return result, nil
+}
+
+func parseURL(rawURL string) (string, error) {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return "", err
+	}
+	return u.String(), nil
 }

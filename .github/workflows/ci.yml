@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ["1.21", "1.22", "1.23"]
+        go-version: ["1.22", "1.23"]
     steps:
       - uses: actions/checkout@v4
 
@@ -35,7 +35,6 @@ jobs:
   integration:
     name: Integration tests (live sites)
     runs-on: ubuntu-latest
-    # Only run on push to main or tags — not on PRs to avoid hammering external sites.
     if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
@@ -51,8 +50,6 @@ jobs:
 
       - name: Integration tests
         run: go test -v -run TestIntegration -timeout 120s ./...
-        # Integration tests skip themselves when a site is unreachable,
-        # so this step succeeds even in restricted network environments.
 
   lint:
     name: Lint

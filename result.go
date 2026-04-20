@@ -1,15 +1,18 @@
 package sap
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 // Category classifies what kind of technology was detected.
 type Category int
 
 const (
-	CategorySPAFramework Category = iota // React, Vue, Angular, Svelte, Preact, Solid, Qwik, Ember, Lit, …
-	CategoryMetaFramework               // Next.js, Nuxt, Remix, Gatsby, SvelteKit, Astro, Blazor, SolidStart, Fresh, Inertia
-	CategoryHosting                     // Vercel, Netlify, Cloudflare, GitHub Pages, Fly, Render
-	CategoryBundler                     // Webpack, Vite, Turbopack, esbuild, Parcel
+	CategorySPAFramework Category = iota
+	CategoryMetaFramework
+	CategoryHosting
+	CategoryBundler
 )
 
 func (c Category) String() string {
@@ -50,4 +53,29 @@ type Result struct {
 	Hosting    []Framework       `json:"hosting,omitempty"`
 	RawHeaders http.Header       `json:"-"`
 	Extras     map[string]string `json:"extras,omitempty"`
+}
+
+// MarshalJSON implements custom JSON marshaling for Result, including
+// the otherwise-omitted RawHeaders field as "headers".
+func (r *Result) MarshalJSON() ([]byte, error) {
+	type Alias Result
+	aux := &struct {
+		Headers map[string][]string `json:"headers,omitempty"`
+		*Alias
+	}{
+		Headers: canonicalizeHeaders(r.RawHeaders),
+		Alias:   (*Alias)(r),
+	}
+	return json.Marshal(aux)
+}
+
+func canonicalizeHeaders(h http.Header) map[string][]string {
+	if len(h) == 0 {
+		return nil
+	}
+	m := make(map[string][]string, len(h))
+	for k, v := range h {
+		m[k] = v
+	}
+	return m
 }
