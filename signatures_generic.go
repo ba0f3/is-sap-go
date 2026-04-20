@@ -1,8 +1,6 @@
 package sap
 
-import (
-	"regexp"
-)
+import "regexp"
 
 var genericSignatures = []*Signature{
 	{

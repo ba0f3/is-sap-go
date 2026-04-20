@@ -52,62 +52,62 @@ func ExtractJSDataFromHTML(html string) []JSBlob {
 // setupSandbox initializes minimal stubs to prevent script errors.
 func setupSandbox(vm *goja.Runtime) {
 	// window object (goja's GlobalObject IS window)
-	vm.Set("window", vm.GlobalObject())
+	_ = vm.Set("window", vm.GlobalObject())
 
 	// document stubs
 	docObj := vm.NewObject()
-	docObj.Set("createElement", func(tag string) goja.Value { return vm.NewObject() })
-	docObj.Set("getElementById", func(id string) goja.Value { return nil })
-	docObj.Set("querySelector", func(sel string) goja.Value { return nil })
-	docObj.Set("querySelectorAll", func(sel string) goja.Value { return vm.NewArray() })
-	docObj.Set("addEventListener", func(...interface{}) {})
-	vm.Set("document", docObj)
+	_ = docObj.Set("createElement", func(tag string) goja.Value { return vm.NewObject() })
+	_ = docObj.Set("getElementById", func(id string) goja.Value { return nil })
+	_ = docObj.Set("querySelector", func(sel string) goja.Value { return nil })
+	_ = docObj.Set("querySelectorAll", func(sel string) goja.Value { return vm.NewArray() })
+	_ = docObj.Set("addEventListener", func(...interface{}) {})
+	_ = vm.Set("document", docObj)
 
 	// navigator stubs
 	navObj := vm.NewObject()
-	navObj.Set("userAgent", "Mozilla/5.0")
-	vm.Set("navigator", navObj)
+	_ = navObj.Set("userAgent", "Mozilla/5.0")
+	_ = vm.Set("navigator", navObj)
 
 	// localStorage / sessionStorage
 	storageObj := vm.NewObject()
-	storageObj.Set("getItem", func(key string) goja.Value { return nil })
-	storageObj.Set("setItem", func(...interface{}) {})
-	vm.Set("localStorage", storageObj)
-	vm.Set("sessionStorage", storageObj)
+	_ = storageObj.Set("getItem", func(key string) goja.Value { return nil })
+	_ = storageObj.Set("setItem", func(...interface{}) {})
+	_ = vm.Set("localStorage", storageObj)
+	_ = vm.Set("sessionStorage", storageObj)
 
 	// console stubs
 	consoleObj := vm.NewObject()
-	consoleObj.Set("log", func(...interface{}) {})
-	consoleObj.Set("error", func(...interface{}) {})
-	vm.Set("console", consoleObj)
+	_ = consoleObj.Set("log", func(...interface{}) {})
+	_ = consoleObj.Set("error", func(...interface{}) {})
+	_ = vm.Set("console", consoleObj)
 
 	// fetch stub
-	vm.Set("fetch", func(...interface{}) goja.Value {
-		return vm.NewObject() // return a dummy promise-like object
+	_ = vm.Set("fetch", func(...interface{}) goja.Value {
+		return vm.NewObject()
 	})
 
 	// setTimeout/setInterval stubs
-	vm.Set("setTimeout", func(...interface{}) {})
-	vm.Set("setInterval", func(...interface{}) {})
-	vm.Set("clearTimeout", func(...interface{}) {})
-	vm.Set("clearInterval", func(...interface{}) {})
+	_ = vm.Set("setTimeout", func(...interface{}) {})
+	_ = vm.Set("setInterval", func(...interface{}) {})
+	_ = vm.Set("clearTimeout", func(...interface{}) {})
+	_ = vm.Set("clearInterval", func(...interface{}) {})
 
 	// requestAnimationFrame
-	vm.Set("requestAnimationFrame", func(...interface{}) {})
-	vm.Set("cancelAnimationFrame", func(...interface{}) {})
+	_ = vm.Set("requestAnimationFrame", func(...interface{}) {})
+	_ = vm.Set("cancelAnimationFrame", func(...interface{}) {})
 
 	// MutationObserver
-	vm.Set("MutationObserver", func(...interface{}) goja.Value {
+	_ = vm.Set("MutationObserver", func(...interface{}) goja.Value {
 		return vm.NewObject()
 	})
 
 	// IntersectionObserver
-	vm.Set("IntersectionObserver", func(...interface{}) goja.Value {
+	_ = vm.Set("IntersectionObserver", func(...interface{}) goja.Value {
 		return vm.NewObject()
 	})
 
 	// ResizeObserver
-	vm.Set("ResizeObserver", func(...interface{}) goja.Value {
+	_ = vm.Set("ResizeObserver", func(...interface{}) goja.Value {
 		return vm.NewObject()
 	})
 }
@@ -125,8 +125,6 @@ func extractInlineScripts(html string) []string {
 		}
 	}
 
-	// Also handle data attributes and attribute-based inline scripts more carefully.
-	// This is a best-effort extraction; some scripts may be obfuscated or conditional.
 	return scripts
 }
 
