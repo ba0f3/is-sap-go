@@ -161,7 +161,6 @@ var frontendSignatures = []*Signature{
 				ScriptSrcContains("@lit"),
 				ScriptSrcContains("lit-element"),
 				ScriptSrcContains("lit-html"),
-				Selector("script[type=\"module\"]"),
 			),
 		},
 	},
@@ -202,7 +201,6 @@ var frontendSignatures = []*Signature{
 		Weight:    0.5,
 		Matchers: []Matcher{
 			Any(
-				HTMLSubstring("window.m"),
 				ScriptSrcContains("mithril"),
 			),
 		},

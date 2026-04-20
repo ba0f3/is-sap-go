@@ -51,10 +51,24 @@ var metaFrameworkSignatures = []*Signature{
 				JSGlobal("__remixContext"),
 				JSGlobal("__remixManifest"),
 				JSGlobal("__remixRouteModules"),
+				HTMLSubstring("__remixSyncColorScheme"),
 				HTMLSubstring("<!-- remix -->"),
 			),
 		},
 		Implies: []string{"React"},
+	},
+
+	// VitePress (Vue-powered static docs; vuejs.org uses this stack)
+	{
+		Framework: "VitePress",
+		Category:  CategoryMetaFramework,
+		Weight:    0.88,
+		Matchers: []Matcher{
+			Any(
+				MetaName("generator", "vitepress"),
+			),
+		},
+		Implies: []string{"Vue"},
 	},
 
 	// Gatsby

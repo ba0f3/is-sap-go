@@ -41,17 +41,17 @@ var realSiteCases = []realSiteCase{
 	},
 	{
 		url:         "https://react.dev",
-		framework:   "React",
-		category:    "spa_framework",
+		framework:   "Next.js",
+		category:    "meta_framework",
 		minConf:     0.3,
-		description: "React official docs site",
+		description: "React official docs site (Next.js)",
 	},
 	{
 		url:         "https://vuejs.org",
-		framework:   "Vue",
-		category:    "spa_framework",
+		framework:   "VitePress",
+		category:    "meta_framework",
 		minConf:     0.3,
-		description: "Vue.js official site",
+		description: "Vue.js official site (VitePress docs)",
 	},
 	{
 		url:         "https://angular.io",
